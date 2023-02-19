@@ -1,15 +1,23 @@
-#include <iostream>
-
-using namespace std;
-
-#include <glog/logging.h>
+#include <thread>
+#include "Scheduler.h"
 
 int main(int argc, char* argv[])
 {
-	// Initialize Google¡¯s logging library.
-	google::InitGoogleLogging(argv[0]);
+	auto scheduler = StreamWatch::Scheduler::Instance();
 
-	LOG(INFO) << argv[0] << " Start";
+	if (scheduler->Init(argc, argv) != StreamWatch::ErrorCode::OK)
+	{
+		SPDLOG_ERROR("init fail");
+		return -1;
+	}
+	SPDLOG_INFO("start");
 
+	while (1)
+	{
+		scheduler->DoEvent();
+		std::this_thread::sleep_for(std::chrono::microseconds(1));
+	}
 
+	scheduler->Uninit();
+	return 0;
 }
